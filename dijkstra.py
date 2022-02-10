@@ -9,7 +9,8 @@ class Dijkstra():
 			self.matrix = matrix
 			self.size_matrix = len(matrix)
 			self.node = node
-			self.size_edge = 0			
+			self.size_edge = 0	
+			self.iter_selection = 0		
 			if input_node in node:
 				self.check_input_node = 1
 				self.input_node = input_node
@@ -43,7 +44,7 @@ class Dijkstra():
 
 		if self.check_input_node == 1:
 			i = self.node.index(self.input_node)
-			self.current_matrix = np.full( (self.size_matrix, self.size_matrix+1),"nan" )
+			self.current_matrix = np.full( (self.size_matrix, self.size_matrix+1),"nan",dtype=float )
 			
 			for line in range(self.size_matrix):
 				for row in range(self.size_matrix):
@@ -51,16 +52,42 @@ class Dijkstra():
 						self.current_matrix[0][i] = 0
 						self.node_visited[i] = 1
 						self.current_matrix[0][self.size_matrix] = int(i)
+						self.iter_selection += 1
 					else:
 						self.current_matrix[line][row] = float('inf')
 			output = self.current_matrix
 		else:
 			output = "Warning : Le sommet initiale n'est pas sur la liste"
 		
-		return output
+		return self.input_node
 	
 
-# Test 
+	def dijkstra(self, current_node):
+		self.input_node = current_node
+		i = self.node.index(self.input_node)
+		while self.iter_selection < self.size_matrix:
+			
+			for j in range(self.size_matrix):
+				if  self.node_visited[j] == 0:
+					if self.matrix[i][j] != 0:
+						value = float(self.current_matrix[self.iter_selection-1][i]) + float(self.matrix[i][j]) 
+						if float(self.current_matrix[self.iter_selection-1][j]) > float(value):
+							self.current_matrix[self.iter_selection][j] = float(value)
+						else:
+								self.current_matrix[self.iter_selection][j] = self.current_matrix[self.iter_selection-1][j]		
+					else:
+						self.current_matrix[self.iter_selection][j] = self.current_matrix[self.iter_selection-1][j]	
+				
+			list_mini = list(self.current_matrix[self.iter_selection,0:self.size_matrix])
+			index_mini = list_mini.index( min(list_mini) )
+			self.node_visited[index_mini] = 1
+			self.current_matrix[self.iter_selection][self.size_matrix] = index_mini
+			self.iter_selection += 1
+			self.dijkstra(self.node[index_mini])
+		return self.current_matrix
+	
+
+# Test
 matrix = np.array([
 	[0., 5., 2., 6., 0., 0., 0.],
 	[0., 0., 2., 0., 5., 0., 0.],
@@ -74,4 +101,6 @@ matrix = np.array([
 node = ("A","B","C","D","E","F","G")
 D = Dijkstra(matrix, node, 'A')
 #D.desc()
-print(D.initialisation() )
+#print(D.initialisation() )
+a=D.initialisation()
+print(D.dijkstra( a ) )
